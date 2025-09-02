@@ -11,8 +11,8 @@ function Navigation({active, setActive}) {
             <div className="user-con">
                 <img src={avatar} alt="" />
                 <div className="text">
-                    <h2>Mike</h2>
-                    <p>Your Money</p>
+                    <h2>Dev Sharma</h2>
+                    {/* <p>Your Money</p> */}
                 </div>
             </div>
             <ul className="menu-items">
@@ -27,11 +27,11 @@ function Navigation({active, setActive}) {
                     </li>
                 })}
             </ul>
-            <div className="bottom-nav">
+            {/* <div className="bottom-nav">
                 <li>
                     {signout} Sign Out
                 </li>
-            </div>
+            </div> */}
         </NavStyled>
     )
 }

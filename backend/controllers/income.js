@@ -1,8 +1,8 @@
-const IncomeSchema= require("../models/IncomeModel")
+const IncomeSchema = require("../models/IncomeModel")
 
 
 exports.addIncome = async (req, res) => {
-    const {title, amount, category, description, date}  = req.body
+    const { title, amount, category, description, date } = req.body
 
     const income = IncomeSchema({
         title,
@@ -14,37 +14,42 @@ exports.addIncome = async (req, res) => {
 
     try {
         //validations
-        if(!title || !category || !description || !date){
-            return res.status(400).json({message: 'All fields are required!'})
+        if (!title || !category || !description || !date) {
+            return res.status(400).json({ message: 'All fields are required!' })
         }
-        if(amount <= 0 || !amount === 'number'){
-            return res.status(400).json({message: 'Amount must be a positive number!'})
+        const inputDate = new Date(date);
+        const today = new Date();
+        if (inputDate > today) {
+            return res.status(400).json({ message: 'Date cannot be in the future' })
+        }
+        if (amount <= 0 || !amount === 'number') {
+            return res.status(400).json({ message: 'Amount must be a positive number!' })
         }
         await income.save()
-        res.status(200).json({message: 'Income Added'})
+        res.status(200).json({ message: 'Income Added' })
     } catch (error) {
-        res.status(500).json({message: 'Server Error'})
+        res.status(500).json({ message: 'Server Error' })
     }
 
     console.log(income)
 }
 
-exports.getIncomes = async (req, res) =>{
+exports.getIncomes = async (req, res) => {
     try {
-        const incomes = await IncomeSchema.find().sort({createdAt: -1})
+        const incomes = await IncomeSchema.find().sort({ createdAt: -1 })
         res.status(200).json(incomes)
     } catch (error) {
-        res.status(500).json({message: 'Server Error'})
+        res.status(500).json({ message: 'Server Error' })
     }
 }
 
-exports.deleteIncome = async (req, res) =>{
-    const {id} = req.params;
+exports.deleteIncome = async (req, res) => {
+    const { id } = req.params;
     IncomeSchema.findByIdAndDelete(id)
-        .then((income) =>{
-            res.status(200).json({message: 'Income Deleted'})
+        .then((income) => {
+            res.status(200).json({ message: 'Income Deleted' })
         })
-        .catch((err) =>{
-            res.status(500).json({message: 'Server Error'})
+        .catch((err) => {
+            res.status(500).json({ message: 'Server Error' })
         })
 }
