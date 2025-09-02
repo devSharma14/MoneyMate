@@ -7,7 +7,7 @@ import { dollar } from '../../utils/Icons';
 import Chart from '../Chart/Chart';
 
 function Dashboard() {
-    const {totalExpenses,incomes, expenses, totalIncome, totalBalance, getIncomes, getExpenses } = useGlobalContext()
+    const { totalExpenses, incomes, expenses, totalIncome, totalBalance, getIncomes, getExpenses } = useGlobalContext()
 
     useEffect(() => {
         getIncomes()
@@ -91,13 +91,14 @@ const DashboardStyled = styled.div`
                     box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
                     border-radius: 20px;
                     padding: 1rem;
-                    p{
-                        font-size: 3.5rem;
-                        font-weight: 700;
-                    }
                 }
 
-                .balance{
+                /* Medium font sizes for amounts */
+                .income p, .expense p {
+                    font-size: 2rem;
+                    font-weight: 700;
+                }
+                .balance {
                     grid-column: 2 / 4;
                     display: flex;
                     flex-direction: column;
@@ -106,7 +107,8 @@ const DashboardStyled = styled.div`
                     p{
                         color: var(--color-green);
                         opacity: 0.6;
-                        font-size: 4.5rem;
+                        font-size: 2.5rem;
+                        font-weight: 700;
                     }
                 }
             }
