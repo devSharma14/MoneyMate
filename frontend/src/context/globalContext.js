@@ -1,15 +1,17 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/v1/";   // this is where my backend server is running
+const BASE_URL = "http://localhost:5000/api/v1/";
 const GlobalContext = React.createContext();
 
 export const GlobalProvider = ({ children }) => {
+    // -------------------- State --------------------
     const [incomes, setIncomes] = useState([]);
     const [expenses, setExpenses] = useState([]);
+    const [limits, setLimits] = useState([]);
     const [error, setError] = useState(null);
 
-    // Add Income
+    // -------------------- Income --------------------
     const addIncome = async (income) => {
         try {
             await axios.post(`${BASE_URL}add-income`, income);
@@ -20,20 +22,48 @@ export const GlobalProvider = ({ children }) => {
     };
 
     const getIncomes = async () => {
-        const response = await axios.get(`${BASE_URL}get-incomes`);
-        setIncomes(response.data);
+        try {
+            const response = await axios.get(`${BASE_URL}get-incomes`);
+            setIncomes(response.data);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+        }
     };
 
     const deleteIncome = async (id) => {
-        await axios.delete(`${BASE_URL}delete-income/${id}`);
-        getIncomes();
+        try {
+            await axios.delete(`${BASE_URL}delete-income/${id}`);
+            getIncomes();
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+        }
     };
 
-    const totalIncome = () => incomes.reduce((acc, item) => acc + item.amount, 0);
+    const totalIncome = () =>
+        incomes.reduce((acc, item) => acc + Number(item.amount), 0);
 
-    // Add Expense
+    // -------------------- Expense --------------------
     const addExpense = async (expense) => {
         try {
+            // Calculate today's limit
+            const today = new Date().toDateString(); // e.g., "Wed Sep 04 2025"
+            const todayLimitObj = limits.find(
+                (l) => new Date(l.date).toDateString() === today
+            );
+            const todayLimit = todayLimitObj ? todayLimitObj.amount : Infinity;
+
+            // Calculate today's total expenses
+            const todayExpenses = expenses
+                .filter((e) => new Date(e.date).toDateString() === today)
+                .reduce((acc, e) => acc + e.amount, 0);
+
+            // Check if adding this expense exceeds the limit
+            if (todayExpenses + expense.amount > todayLimit) {
+                setError(`Expense exceeds today's limit of $${todayLimit}`);
+                return; // Stop adding
+            }
+
+            // Otherwise, add normally
             await axios.post(`${BASE_URL}add-expense`, expense);
             getExpenses();
         } catch (err) {
@@ -41,35 +71,67 @@ export const GlobalProvider = ({ children }) => {
         }
     };
 
+
     const getExpenses = async () => {
-        const response = await axios.get(`${BASE_URL}get-expenses`);
-        setExpenses(response.data);
+        try {
+            const response = await axios.get(`${BASE_URL}get-expenses`);
+            setExpenses(response.data);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+        }
     };
 
     const deleteExpense = async (id) => {
-        await axios.delete(`${BASE_URL}delete-expense/${id}`);
-        getExpenses();
+        try {
+            await axios.delete(`${BASE_URL}delete-expense/${id}`);
+            getExpenses();
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+        }
     };
 
-    const totalExpenses = () => expenses.reduce((acc, item) => acc + item.amount, 0);
+    const totalExpenses = () =>
+        expenses.reduce((acc, item) => acc + Number(item.amount), 0);
 
     const totalBalance = () => totalIncome() - totalExpenses();
 
+    // -------------------- Transaction History --------------------
     const transactionHistory = () => {
-        const history = [...incomes, ...expenses].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        return history.slice(0, 3);
+        return [...incomes, ...expenses]
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 3);
     };
 
+    // -------------------- Limits --------------------
+    const addLimit = (limit) => {
+        const newLimit = {
+            ...limit,
+            amount: Number(limit.amount),
+            _id: Date.now().toString(), // temporary unique id
+        };
+        setLimits((prev) => [...prev, newLimit]);
+        setError("");
+    };
+
+    const getLimits = () => limits;
+
+    const totalLimit = (date = new Date()) => {
+        const todayStr = date.toDateString();
+        return limits
+            .filter((l) => new Date(l.date).toDateString() === todayStr)
+            .reduce((acc, l) => acc + Number(l.amount), 0);
+    };
+
+    // -------------------- Provider --------------------
     return (
         <GlobalContext.Provider
             value={{
+                incomes,
+                expenses,
+                limits,
                 addIncome,
                 getIncomes,
-                incomes,
                 deleteIncome,
-                expenses,
                 totalIncome,
                 addExpense,
                 getExpenses,
@@ -77,6 +139,9 @@ export const GlobalProvider = ({ children }) => {
                 totalExpenses,
                 totalBalance,
                 transactionHistory,
+                addLimit,
+                getLimits,
+                totalLimit,
                 error,
                 setError,
             }}
@@ -87,13 +152,3 @@ export const GlobalProvider = ({ children }) => {
 };
 
 export const useGlobalContext = () => useContext(GlobalContext);
-
-// summary of the context:
-// this code creates a global context for managing incomes and expenses our react app.
-// it provides functions to add, get and delete incomes and expenses,
-// and calculates total income, total expenses, total balance, and transaction history.
-// it also handles errors that may occur during these operations.
-// it uses axios  
-// to make HTTP requests to a backend server running at http://localhost:5000/api/v1/
-// the context is provided to the entire app through the GlobalProvider component,
-// and can be accessed using the useGlobalContext hook.

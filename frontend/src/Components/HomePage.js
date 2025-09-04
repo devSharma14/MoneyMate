@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes, createGlobalStyle } from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 // Global font imports
 const GlobalFonts = createGlobalStyle`
@@ -85,29 +86,48 @@ const textGlow = keyframes`
 `;
 
 function HomePage({ onStart }) {
-  const [name, setName] = useState("");
+  const [user, setUser] = useState(["", ""]); // [name, email]
   const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
   const handleStart = () => {
-    if (name.trim()) {
-      onStart(name.trim());
+    const nameTrimmed = user[0].trim();
+    const emailTrimmed = user[1].trim();
+
+    // Simple email regex check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (nameTrimmed && emailTrimmed && emailRegex.test(emailTrimmed)) {
+      // Save user in parent (App.js)
+      onStart([nameTrimmed, emailTrimmed]);
+
+      // Persist to localStorage
+      localStorage.setItem("user", JSON.stringify([nameTrimmed, emailTrimmed]));
+
+      // Navigate to dashboard, replace history so back button won’t return here
+      navigate("/dashboard", { replace: true });
     } else {
-      const input = document.querySelector('input');
-      input.style.borderColor = '#ef4444';
-      input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+      // highlight both inputs on error
+      document.querySelectorAll("input").forEach((input) => {
+        input.style.borderColor = "#ef4444";
+        input.style.boxShadow = "0 0 0 3px rgba(239, 68, 68, 0.1)";
+      });
+
       setTimeout(() => {
-        input.style.borderColor = '';
-        input.style.boxShadow = '';
+        document.querySelectorAll("input").forEach((input) => {
+          input.style.borderColor = "";
+          input.style.boxShadow = "";
+        });
       }, 2000);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleStart();
     }
   };
@@ -123,8 +143,8 @@ function HomePage({ onStart }) {
           <FloatingOrb delay="1s" size="120px" top="30%" right="25%" />
           <FloatingOrb delay="3s" size="100px" bottom="40%" right="40%" />
         </BackgroundElements>
-        
-        <MainContainer className={isVisible ? 'visible' : ''}>
+
+        <MainContainer className={isVisible ? "visible" : ""}>
           <LeftSection>
             <LogoSection>
               <IconWrapper>
@@ -132,7 +152,7 @@ function HomePage({ onStart }) {
               </IconWrapper>
               <BrandText>MoneyTracker</BrandText>
             </LogoSection>
-            
+
             <HeroSection>
               <MainHeading>
                 Master Your
@@ -140,42 +160,48 @@ function HomePage({ onStart }) {
                 <br />
                 <SecondaryText>One Transaction at a Time</SecondaryText>
               </MainHeading>
-              
+
               <SubHeading>
-                Transform your relationship with money. Our sophisticated platform combines 
-                elegant design with powerful analytics to give you complete control over 
+                Transform your relationship with money. Our sophisticated platform combines
+                elegant design with powerful analytics to give you complete control over
                 your financial destiny.
               </SubHeading>
-              
-              <FeaturesList>
-              </FeaturesList>
             </HeroSection>
           </LeftSection>
-          
+
           <RightSection>
             <InputCard>
               <CardHeader>
                 <CardTitle>Begin Your Journey</CardTitle>
                 <CardSubtitle>Join thousands of users who've taken control</CardSubtitle>
               </CardHeader>
-              
+
               <InputSection>
                 <InputLabel>What should we call you?</InputLabel>
-                <InputContainer>
-                  <StyledInput
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                  />
-                  <StartButton onClick={handleStart}>
-                    <ButtonText>Start Your Journey</ButtonText>
-                    <ArrowIcon>→</ArrowIcon>
-                  </StartButton>
-                </InputContainer>
-                <InputHint>✨ Free forever • No credit card required</InputHint>
+                <StyledInput
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={user[0]}
+                  onChange={(e) => setUser([e.target.value, user[1]])}
+                  onKeyPress={handleKeyPress}
+                />
+
+                <InputLabel>What's your email address?</InputLabel>
+                <StyledInput
+                  type="email"
+                  placeholder="Enter your email"
+                  value={user[1]}
+                  onChange={(e) => setUser([user[0], e.target.value])}
+                  onKeyPress={handleKeyPress}
+                />
+
+                <StartButton onClick={handleStart}>
+                  <ButtonText>Start Your Journey</ButtonText>
+                  <ArrowIcon>→</ArrowIcon>
+                </StartButton>
               </InputSection>
+
+              <InputHint>✨ Free forever • No credit card required</InputHint>
             </InputCard>
           </RightSection>
         </MainContainer>
