@@ -119,6 +119,16 @@ export const GlobalProvider = ({ children }) => {
   // -------------------- Limits --------------------
   const addLimit = async (limit) => {
     try {
+      const { amount } = limit;
+      const remainingBalance = totalBalance() - totalLimit(new Date());
+
+      if (Number(amount) > remainingBalance) {
+        const msg = `Cannot add limit of $${amount}. Only $${remainingBalance} available.`;
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+
       await axios.post(`${BASE_URL}add-limit`, limit);
       getLimits();
       toast.success("Limit added successfully!");
@@ -128,6 +138,7 @@ export const GlobalProvider = ({ children }) => {
       toast.error(message);
     }
   };
+
 
   const getLimits = async () => {
     try {

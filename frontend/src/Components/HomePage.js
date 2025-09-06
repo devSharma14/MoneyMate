@@ -150,7 +150,7 @@ function HomePage({ onStart }) {
               <IconWrapper>
                 <DollarIcon>$</DollarIcon>
               </IconWrapper>
-              <BrandText>MoneyTracker</BrandText>
+              <BrandText>Money Mate</BrandText>
             </LogoSection>
 
             <HeroSection>
