@@ -10,6 +10,7 @@ import Expenses from "./Components/Expenses/Expenses";
 import Limits from "./Components/Limit/Limit";
 import HomePage from "./Components/HomePage";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   // user state
@@ -25,6 +26,9 @@ function App() {
     <Router>
       <AppStyled bg={bg} className="App">
         {orbMemo}
+
+        <Toaster position="top-right" reverseOrder={false}/>
+
         <Routes>
           {/* Homepage should always show at "/" */}
           <Route path="/" element={<HomePage onStart={setUser} />} />

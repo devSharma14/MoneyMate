@@ -8,20 +8,19 @@ import { plus } from "../../utils/Icons";
 import { toast } from "react-toastify";
 
 function LimitForm() {
-  const { addLimit, error, setError } = useGlobalContext();
+  const { addLimit } = useGlobalContext();
   const [inputState, setInputState] = useState({ date: new Date(), amount: "" });
   const { date, amount } = inputState;
 
   const handleInput = (name) => (e) => {
     setInputState({ ...inputState, [name]: e.target.value });
-    setError("");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!amount || isNaN(amount)) {
-      setError("Please enter a valid amount");
+      toast.error("Please enter a valid amount");
       return;
     }
 
@@ -32,8 +31,6 @@ function LimitForm() {
 
   return (
     <LimitFormStyled onSubmit={handleSubmit}>
-      {error && <p className="error">{error}</p>}
-
       <div className="input-control">
         <DatePicker
           id="date"
@@ -70,50 +67,40 @@ function LimitForm() {
 }
 
 const LimitFormStyled = styled.form`
-    margin-top:20px;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    input, textarea, select{
-        font-family: inherit;
-        font-size: inherit;
-        outline: none;
-        border: none;
-        padding: .5rem 1rem;
-        border-radius: 5px;
-        border: 2px solid #fff;
-        background: transparent;
-        resize: none;
-        box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
-        color: rgba(34, 34, 96, 0.9);
-        &::placeholder{
-            color: rgba(34, 34, 96, 0.4);
-        }
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    border: none;
+    padding: .5rem 1rem;
+    border-radius: 5px;
+    border: 2px solid #fff;
+    background: transparent;
+    resize: none;
+    box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
+    color: rgba(34, 34, 96, 0.9);
+    &::placeholder {
+      color: rgba(34, 34, 96, 0.4);
     }
-    .input-control{
-        input{
-            width: 100%;
-        }
+  }
+  .input-control {
+    input {
+      width: 100%;
     }
+  }
 
-    .selects{
-        display: flex;
-        justify-content: flex-end;
-        select{
-            color: rgba(34, 34, 96, 0.4);
-            &:focus, &:active{
-                color: rgba(34, 34, 96, 1);
-            }
-        }
+  .submit-btn {
+    button {
+      box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
+      &:hover {
+        background: var(--color-green) !important;
+      }
     }
-
-    .submit-btn{
-        button{
-            box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
-            &:hover{
-                background: var(--color-green) !important;
-            }
-        }
-    }
+  }
 `;
-export default LimitForm
+
+export default LimitForm;
